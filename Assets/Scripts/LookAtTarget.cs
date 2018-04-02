@@ -6,18 +6,15 @@ public class LookAtTarget : MonoBehaviour {
 
 	private Transform target;
 
-	void Update ()
-	{
-		if (target == null)
-		{
+	void Update () {
+		if (target == null) {
 			return;
 		}
 
 		transform.LookAt(target);
 	}
 
-	public void SetTarget (Transform target)
-	{
+	public void SetTarget (Transform target) {
 		this.target = target;
 	}
 }

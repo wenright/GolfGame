@@ -8,38 +8,32 @@ public class PlayerController : NetworkBehaviour {
 	private Vector3 mouseStartPos;
 	private float strength = 100.0f;
 
-	public override void OnStartLocalPlayer ()
-	{
+	public override void OnStartLocalPlayer () {
 		base.OnStartLocalPlayer();
 
-		lookAtTarget = Camera.main.GetComponent<LookAtTarget> ();
+		lookAtTarget = Camera.main.GetComponent<LookAtTarget>();
 
 		lookAtTarget.SetTarget(transform);
 	}
 
-	public override void OnStartServer ()
-	{
+	public override void OnStartServer () {
 		base.OnStartServer();
 
 		body = GetComponent<Rigidbody>();
 	}
 
-	void Update ()
-	{
-		if (isLocalPlayer)
-		{
-			if (Input.GetMouseButtonDown(0))
-			{
+	void Update () {
+		if (isLocalPlayer) {
+			if (Input.GetMouseButtonDown(0)) {
 				mouseStartPos = Input.mousePosition;
 			}
 
-			if (Input.GetMouseButton(0))
-			{
+			if (Input.GetMouseButton(0)) {
 				// TODO hit direction grqphics
+
 			}
 
-			if (Input.GetMouseButtonUp(0))
-			{
+			if (Input.GetMouseButtonUp(0)) {
 				Vector3 dir = (Quaternion.AngleAxis(90, Vector2.right) * (mouseStartPos - Input.mousePosition)).normalized;
 				CmdSwing(dir);
 			}
@@ -47,8 +41,7 @@ public class PlayerController : NetworkBehaviour {
 	}
 
 	[Command]
-	private void CmdSwing (Vector3 dir)
-	{
+	private void CmdSwing (Vector3 dir) {
 		body.AddForce(dir * strength);
 	}
 }
