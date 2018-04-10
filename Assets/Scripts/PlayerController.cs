@@ -8,7 +8,7 @@ public class PlayerController : NetworkBehaviour {
 
 	private LookAtTarget lookAtTarget;
 	private Rigidbody body;
-	private float strength = 500.0f;
+	private float strength = 10.0f;
 
 	private void Start () {
 		body = GetComponent<Rigidbody>();
@@ -48,20 +48,21 @@ public class PlayerController : NetworkBehaviour {
 	}
 
 	// Starts the physics simulation on client side while sending request to server
-	// TODO Should we delay this by avg ping time to reduce jump in next SyncVar update?
 	private void Swing (Vector3 dir) {
-		// TODO add force locally to simulate what is happening on the server?
-		// AddForce(dir);
-		directionArrow.SetActive(false);
 		CmdSwing(dir);
+		directionArrow.SetActive(false);
 	}
 
 	[Command]
 	private void CmdSwing (Vector3 dir) {
-		AddForce(dir);
+		body.velocity = dir * strength;
+		RpcSetVelocity(body.velocity);
 	}
 
-	private void AddForce (Vector3 dir) {
-		body.AddForce(dir * strength);
+	[ClientRpc]
+	private void RpcSetVelocity (Vector3 velocity) {
+		print("setting new velocity");
+		print(velocity);
+		body.velocity = velocity;
 	}
 }
