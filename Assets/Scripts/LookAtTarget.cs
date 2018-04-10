@@ -5,7 +5,7 @@ using UnityEngine;
 public class LookAtTarget : MonoBehaviour {
 
 	private Transform target;
-	private Vector3 offset = new Vector3(0, 2, -5);
+	private Vector3 offset = new Vector3(0, 4, -5);
 	private float lerpSpeed = 1.0f;
 
 	void Update () {

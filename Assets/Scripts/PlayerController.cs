@@ -2,16 +2,20 @@ using System.Collections;
 ﻿using UnityEngine;
 using UnityEngine.Networking;
 
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : NetworkBehaviour {
 
 	public GameObject directionArrow;
 
+	private LineRenderer lineRenderer;
 	private LookAtTarget lookAtTarget;
 	private Rigidbody body;
-	private float strength = 10.0f;
+	private float maxDrawLength = 150.0f;
+	private float strength = 0.03f;
 
 	private void Start () {
 		body = GetComponent<Rigidbody>();
+		lineRenderer = transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<LineRenderer>();
 	}
 
 	public override void OnStartLocalPlayer () {
@@ -34,17 +38,29 @@ public class PlayerController : NetworkBehaviour {
 			if (Input.GetMouseButton(0)) {
 				directionArrow.transform.rotation =
 					Quaternion.Euler(0, Quaternion.LookRotation(Quaternion.AngleAxis(180, Vector2.up) * GetDir()).eulerAngles.y, 0);
+
+				directionArrow.transform.GetChild(0).transform.localPosition = new Vector3(0, 0, -1 + -GetVector().magnitude);
+				lineRenderer.SetPosition(0, Vector3.zero);
+				lineRenderer.SetPosition(1, new Vector3(0, GetVector().magnitude, 0));
 			}
 
 			if (Input.GetMouseButtonUp(0)) {
-				Swing(GetDir());
+				Swing(GetVector());
 			}
 		}
 	}
 
 	private Vector3 GetDir () {
-		return (Quaternion.AngleAxis(90, Vector2.right)
-			* (Camera.main.WorldToScreenPoint(transform.position) - Input.mousePosition)).normalized;
+		return GetVector().normalized;
+	}
+
+	private Vector3 GetVector () {
+		Vector3 vec = (Quaternion.AngleAxis(90, Vector2.right)
+			* (Camera.main.WorldToScreenPoint(transform.position) - Input.mousePosition));
+
+		vec = Vector3.ClampMagnitude(vec, maxDrawLength) * strength;
+
+		return vec;
 	}
 
 	// Starts the physics simulation on client side while sending request to server
@@ -55,7 +71,9 @@ public class PlayerController : NetworkBehaviour {
 
 	[Command]
 	private void CmdSwing (Vector3 dir) {
-		body.velocity = dir * strength;
+		// TODO need vector clamping on server side. Otherwise player could just send a crazy high velocity
+		// Could just move client side clamping to server, but then need to fix UI with clamping
+		body.velocity = dir;
 		RpcSetVelocity(body.velocity);
 	}
 
