@@ -6,6 +6,7 @@ TagManager:
   tags:
   - NetworkManager
   - Hole
+  - NumSwingsText
   layers:
   - Default
   - TransparentFX

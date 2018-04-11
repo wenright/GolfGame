@@ -681,7 +681,7 @@ GameObject:
   - component: {fileID: 1758878263}
   m_Layer: 5
   m_Name: NumSwings
-  m_TagString: Untagged
+  m_TagString: NumSwingsText
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

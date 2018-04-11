@@ -19,6 +19,9 @@ public class PlayerController : NetworkBehaviour {
 	[SyncVar(hook="UpdateNumSwings")]
 	private int numSwings = 0;
 
+	[SyncVar]
+	private bool canSwing = true;
+
 	private void Start () {
 		body = GetComponent<Rigidbody>();
 		lineRenderer = transform.GetChild(0).transform.GetChild(0).gameObject.GetComponent<LineRenderer>();
@@ -56,6 +59,12 @@ public class PlayerController : NetworkBehaviour {
 				Swing(GetVector());
 			}
 		}
+
+		if (isServer) {
+			if (!canSwing && body.velocity.magnitude < 0.2) {
+				canSwing = true;
+			}
+		}
 	}
 
 	private Vector3 GetDir () {
@@ -73,18 +82,28 @@ public class PlayerController : NetworkBehaviour {
 
 	// Starts the physics simulation on client side while sending request to server
 	private void Swing (Vector3 dir) {
-		CmdSwing(dir);
 		directionArrow.SetActive(false);
+
+		if (canSwing) {
+			CmdSwing(dir);
+		}
 	}
 
 	[Command]
 	private void CmdSwing (Vector3 dir) {
+		if (!canSwing) {
+			return;
+		}
+
 		// TODO need vector clamping on server side. Otherwise player could just send a crazy high velocity
 		// Could just move client side clamping to server, but then need to fix UI with clamping
 		// Clamp a local variable on client so it is not double clamped?
 		body.velocity = dir;
 		RpcSetVelocity(body.velocity);
+
 		numSwings++;
+
+		canSwing = false;
 	}
 
 	[ClientRpc]
@@ -98,6 +117,7 @@ public class PlayerController : NetworkBehaviour {
 		}
 
 		if (other.tag == "Hole") {
+			// TODO maybe wait until ball has a low velocity? Sometimes you can land in the hole but then bounce out
 			GameObject confettiInstance = Instantiate(confettiPrefab, other.transform.position, Quaternion.Euler(-90, 0, 0)) as GameObject;
 			NetworkServer.Spawn(confettiInstance);
 			print("You did it in " + numSwings + " swings!");
