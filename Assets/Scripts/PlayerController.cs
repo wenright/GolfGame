@@ -1,6 +1,7 @@
 using System.Collections;
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerController : NetworkBehaviour {
@@ -8,11 +9,15 @@ public class PlayerController : NetworkBehaviour {
 	public GameObject directionArrow;
 	public GameObject confettiPrefab;
 
+	private Text numSwingsText;
 	private LineRenderer lineRenderer;
 	private LookAtTarget lookAtTarget;
 	private Rigidbody body;
 	private float maxDrawLength = 150.0f;
 	private float strength = 0.03f;
+
+	[SyncVar(hook="UpdateNumSwings")]
+	private int numSwings = 0;
 
 	private void Start () {
 		body = GetComponent<Rigidbody>();
@@ -24,6 +29,8 @@ public class PlayerController : NetworkBehaviour {
 
 		lookAtTarget = Camera.main.GetComponent<LookAtTarget>();
 		lookAtTarget.SetTarget(transform);
+
+		numSwingsText = GameObject.FindGameObjectWithTag("NumSwingsText").GetComponent<Text>();
 	}
 
 	public override void OnStartServer () {
@@ -74,14 +81,14 @@ public class PlayerController : NetworkBehaviour {
 	private void CmdSwing (Vector3 dir) {
 		// TODO need vector clamping on server side. Otherwise player could just send a crazy high velocity
 		// Could just move client side clamping to server, but then need to fix UI with clamping
+		// Clamp a local variable on client so it is not double clamped?
 		body.velocity = dir;
 		RpcSetVelocity(body.velocity);
+		numSwings++;
 	}
 
 	[ClientRpc]
 	private void RpcSetVelocity (Vector3 velocity) {
-		print("setting new velocity");
-		print(velocity);
 		body.velocity = velocity;
 	}
 
@@ -93,7 +100,12 @@ public class PlayerController : NetworkBehaviour {
 		if (other.tag == "Hole") {
 			GameObject confettiInstance = Instantiate(confettiPrefab, other.transform.position, Quaternion.Euler(-90, 0, 0)) as GameObject;
 			NetworkServer.Spawn(confettiInstance);
+			print("You did it in " + numSwings + " swings!");
 		}
+	}
+
+	private void UpdateNumSwings (int numSwings) {
+		numSwingsText.text = "" + numSwings;
 	}
 
 }
