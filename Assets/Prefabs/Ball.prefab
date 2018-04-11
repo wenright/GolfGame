@@ -217,6 +217,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   directionArrow: {fileID: 1118835873559104}
+  confettiPrefab: {fileID: 1060589637845190, guid: 7cf5caa53f3e97647bef070424622531,
+    type: 2}
 --- !u!120 &120273281703223924
 LineRenderer:
   m_ObjectHideFlags: 1

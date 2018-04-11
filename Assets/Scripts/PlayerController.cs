@@ -6,6 +6,7 @@ using UnityEngine.Networking;
 public class PlayerController : NetworkBehaviour {
 
 	public GameObject directionArrow;
+	public GameObject confettiPrefab;
 
 	private LineRenderer lineRenderer;
 	private LookAtTarget lookAtTarget;
@@ -83,4 +84,16 @@ public class PlayerController : NetworkBehaviour {
 		print(velocity);
 		body.velocity = velocity;
 	}
+
+	private void OnTriggerEnter (Collider other) {
+		if (!isServer) {
+			return;
+		}
+
+		if (other.tag == "Hole") {
+			GameObject confettiInstance = Instantiate(confettiPrefab, other.transform.position, Quaternion.Euler(-90, 0, 0)) as GameObject;
+			NetworkServer.Spawn(confettiInstance);
+		}
+	}
+
 }
